@@ -1,32 +1,26 @@
 
-## opening libraries
+## opening libraries:
 
 library(tidyverse)
 library(shiny)
-library(lubridate)
+library(lubridate) ## used to manipulate the dates from the data
 
 
-## loading data
+## loading data:
 
 weather <- read_delim("seattle_weather_1948-2017.csv.xls")
 
 
-## mutating data
+## mutating data:
 
 some_date <- weather$DATE
 
 weather_mon <- weather %>% 
   mutate("month" = month(as.POSIXlt(some_date, format="%Y/%m/%d")))
 
-weather_year <- weather %>% 
-  mutate("year" = year(as.POSIXlt(some_date, format="%Y/%m/%d")))
 
 
-## extra work space
-
-
-
-## problem set work
+## problem set work:
 
 ui <- fluidPage(
   titlePanel("Seattle Weather Data"),
@@ -92,13 +86,28 @@ ui <- fluidPage(
     tabPanel("Table",
              sidebarLayout(
                sidebarPanel(
-                 fluidRow()
-               ),
-               mainPanel()
+                 fluidRow(
+                   column(12,
+                  ## explanations/information:
+                   h4("Tables:"),
+                   p("You can analyze the different average precipitation 
+                     patterns over different seasons:", em("spring, summer,
+                     fall"), "and", em("winter."), "Choose which options
+                     you'd like below."),
+                  uiOutput("seasons")
+                   )
+                 )
+                 ),
+               mainPanel(
+                 p(strong("Fun Fact:"), "The average amount of precipitation 
+                   in this season is"), textOutput("average"),
+                 dataTableOutput("datatable")
+               )
              )
         )
-    )
+    )  
 )
+
 
 
 server <- function(input, output) {
@@ -128,7 +137,64 @@ server <- function(input, output) {
   })
   
 ## table information:
-  
+output$seasons <- renderUI({
+  radioButtons("seasonscheck", "Choose a season:",
+               choices = list("Spring",
+                              "Summer",
+                              "Fall",
+                              "Winter"))
+})
+
+output$datatable <- renderDataTable({
+  if(input$seasonscheck == "Spring") {
+    return(weather_mon %>% 
+             filter(month == c(3, 4, 5)) %>% 
+             select(DATE, PRCP))
+  }
+  if(input$seasonscheck == "Summer") {
+    return(weather_mon %>% 
+             filter(month == c(6, 7, 8)) %>% 
+             select(DATE, PRCP))
+  }
+  if(input$seasonscheck == "Fall") {
+    return(weather_mon %>% 
+             filter(month == c(9, 10, 11)) %>% 
+             select(DATE, PRCP))
+  }
+  if(input$seasonscheck == "Winter") {
+    return(weather_mon %>% 
+             filter(month == c(12, 1, 2)) %>% 
+             select(DATE, PRCP))
+  }
+})    
+
+output$average <- renderText({
+  if(input$seasonscheck == "Spring") {
+    return(weather_mon %>% 
+             filter(month == c(3, 4, 5)) %>% 
+             filter(!is.na(PRCP)) %>% 
+             mean(PRCP))
+  }
+  if(input$seasonscheck == "Summer") {
+    return(weather_mon %>% 
+             filter(month == c(6, 7, 8)) %>% 
+             filter(!is.na(PRCP)) %>% 
+             mean(PRCP))
+  }
+  if(input$seasonscheck == "Fall") {
+    return(weather_mon %>% 
+             filter(month == c(9, 10, 11)) %>% 
+             filter(!is.na(PRCP)) %>% 
+             mean(PRCP))
+  }
+  if(input$seasonscheck == "Winter") {
+    return(weather_mon %>% 
+             filter(month == c(12, 1, 2)) %>% 
+             filter(!is.na(PRCP)) %>% 
+             mean(PRCP)) ## keep getting not numeric
+  }
+}) 
+ 
 }
 
 
