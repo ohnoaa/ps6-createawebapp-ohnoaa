@@ -48,3 +48,9 @@ In the table section, I used the same layout to the plot tab, where the
 side panel has informative instructions and the widget and the main
 panel contains the data table itself with the textual output that reacts
 with the season widget.
+
+## Additional Information
+
+#### How many hours did you spend on this problem set?
+
+I believe I spent about 16-17 hours on this problem set.
